@@ -1,3 +1,6 @@
+#ifndef DATATYPE_H
+#define DATATYPE_H
+
 typedef struct {
   double m;
   double px;
@@ -12,3 +15,5 @@ typedef struct {
   double x;
   double y;
 } vecteur;
+
+#endif

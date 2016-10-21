@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include "datatype.h"
+#include "util.h"
 
 #define G 6.67
+#define TAG 100
 
 int main(){
 
-  int i, j, k, err;
+  int err;
   int nbProc, rank;
   particule * data;
   particule * buffer[2];
@@ -15,7 +17,9 @@ int main(){
   int nbParticules;
   int tag;
   MPI_Status status;
-  MPI_Request requests[4];
+  MPI_Request sendRequests[2];
+  MPI_Request recvRequests[2];
+  int mesParticules;
 
   MPI_Init(NULL,NULL);
 
@@ -52,32 +56,44 @@ int main(){
 
   nbParticules = readData(&data, NULL, rank);
 
-  buffer[0] = malloc(nbProcof(particule) * nbParticules/nbProc);
-  buffer[1] = malloc(nbProcof(particule) * nbParticules/nbProc);
-  force = malloc(nbProcof(double) * nbParticules/nbProc);
+  mesParticules = nbParticules / nbProc;
+
+  buffer[0] = malloc(sizeof(particule) * mesParticules);
+  buffer[1] = malloc(sizeof(particule) * mesParticules);
+  force = malloc(sizeof(double) * mesParticules);
   
-  for (int i = 0; i < nbParticules/nbProc; i++){
+  for (int i = 0; i < mesParticules; i++){
     force[i] = 0.0;
   }
 
-  copier(buffer[0], data, nbParticules/nbProc);
+  copier(buffer[0], data, mesParticules);
 
-  calcul_local(force, data, nbParticules/nbProc);
+  calcul_local(force, data, mesParticules);
 
-  err = MPI_Send_init(buffer[0], nbParticules/nbProc, MPI_Datatype datatype, int dest,
-		    int tag, MPI_Comm comm, MPI_Request *request)
+  MPI_Send_init(buffer[0], mesParticules, V_PARTICULE, (rank+1)%size, TAG, MPI_COMM_WORLD, &sendRequests[0]);
+  MPI_Send_init(buffer[1], mesParticules, V_PARTICULE, (rank+1)%size, TAG, MPI_COMM_WORLD, &sendRequests[1]);
+
+  MPI_Recv_init(buffer[0], mesParticules, V_PARTICULE, (rank-1)%size, TAG, MPI_COMM_WORLD, &recvRequests[0]);
+  MPI_Recv_init(buffer[1], mesParticules, V_PARTICULE, (rank-1)%size, TAG, MPI_COMM_WORLD, &recvRequests[1]);
+
+  MPI_Start(&sendRequest[0]);
+  MPI_Start(&recvRequest[1]);
+
+
+  MPI_Wait(&sendRequest[0], NULL);
+  MPI_Wait(&recvRequest[1], NULL);
 
   for (int i = 1; i < nbProc; i++){
 
-    calcul_lointain(force, buffer[i%2], data, nbParticules/nbProc);
+    calcul_lointain(force, buffer[i%2], data, mesParticules);
 
-    err = MPI_Ssend(buffer, nbParticules/nbProc, MPI_INT, (rank+1)%size, tag, MPI_COMM_WORLD);
+    err = MPI_Ssend(buffer, mesParticules, MPI_INT, (rank+1)%size, tag, MPI_COMM_WORLD);
     if (err != 0){
       fprintf(stderr, "erreur :%d: sur le mpi_ssend. fermeture du programme\n", err);
       return EXIT_FAILURE;
     }
     
-    err = MPI_RCV(buffer, nbParticules/nbProc, MPI_INT, (rank-1)%size, tag, MPI_COMM_WORLD, &status);
+    err = MPI_RCV(buffer, mesParticules, MPI_INT, (rank-1)%size, tag, MPI_COMM_WORLD, &status);
     
   MPI_Finalize();
 

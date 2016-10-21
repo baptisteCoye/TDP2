@@ -6,6 +6,18 @@ INCLUDE_DIRECTORIES(
   ${RAVCI_BINARY_DIR}/src 
   ${RAVCI_SOURCE_DIR} 
   ${RAVCI_SOURCE_DIR}/src 
+  ${MPI_INCLUDE_PATH}
   )
 
 add_executable(driver driver.c)
+target_link_libraries(driver ${MPI_LIBRARIES})
+
+if(MPI_COMPILE_FLAGS)
+  set_target_properties(driver PROPERTIES
+    COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
+endif()
+
+if(MPI_LINK_FLAGS)
+  set_target_properties(driver PROPERTIES
+    LINK_FLAGS "${MPI_LINK_FLAGS}")
+endif()
