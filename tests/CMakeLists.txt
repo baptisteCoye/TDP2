@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.11)
 project(TDP2_PRCD)
 
 INCLUDE_DIRECTORIES(
@@ -8,4 +8,4 @@ INCLUDE_DIRECTORIES(
   ${RAVCI_SOURCE_DIR}/src 
   )
 
-add_executable(driver driver.c)
+add_executable(test_seq test_sequentiel.c)
