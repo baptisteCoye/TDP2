@@ -8,4 +8,7 @@ typedef struct {
   double ay;
 } particule;
 
-
+typedef struct {
+  double x;
+  double y;
+} vecteur;
