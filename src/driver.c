@@ -68,17 +68,20 @@ int main(){
 
   copier(buffer[0], data, mesParticules);
 
-  calcul_local(force, data, mesParticules);
-
+  // Envoie depuis le buffer 0
   MPI_Send_init(buffer[0], mesParticules, V_PARTICULE, (rank+1)%size, TAG, MPI_COMM_WORLD, &sendRequests[0]);
+  // Envoie depuis le buffer 1
   MPI_Send_init(buffer[1], mesParticules, V_PARTICULE, (rank+1)%size, TAG, MPI_COMM_WORLD, &sendRequests[1]);
 
+  // Réception sur le buffer 0
   MPI_Recv_init(buffer[0], mesParticules, V_PARTICULE, (rank-1)%size, TAG, MPI_COMM_WORLD, &recvRequests[0]);
+  // Réception sur le buffer 1
   MPI_Recv_init(buffer[1], mesParticules, V_PARTICULE, (rank-1)%size, TAG, MPI_COMM_WORLD, &recvRequests[1]);
 
   MPI_Start(&sendRequest[0]);
   MPI_Start(&recvRequest[1]);
 
+  calcul_local(force, data, mesParticules);
 
   MPI_Wait(&sendRequest[0], NULL);
   MPI_Wait(&recvRequest[1], NULL);

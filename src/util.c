@@ -17,8 +17,7 @@ void calcul_lointain(double* force, particule buffer, particule* data, int N){
 }
 
 void copier(particule* buffer, particule* data, int N){
-  int i;
-  for (i = 0; i < N; i++){
+  for (int i = 0; i < N; i++){
     buffer[i] = data[i];
   }
 }

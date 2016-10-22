@@ -9,8 +9,10 @@ INCLUDE_DIRECTORIES(
   ${MPI_INCLUDE_PATH}
   )
 
+add_library(util SHARED util.c)
+
 add_executable(driver driver.c)
-target_link_libraries(driver ${MPI_LIBRARIES})
+target_link_libraries(driver util.c ${MPI_LIBRARIES})
 
 if(MPI_COMPILE_FLAGS)
   set_target_properties(driver PROPERTIES
