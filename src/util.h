@@ -32,7 +32,7 @@ int readData(particule** data, char* filename);
  * \param[in] N Le nombre de particules à considérer.
  * \param[out] force Les valeurs des forces sur les particules.
  */
-void calcul_local(double* force, particule* data, int N);
+void calcul_local(vecteur* force, particule* data, int N);
 
 /*!
  * \brief Calcule les forces induites par un groupe de particules A sur un autre groupe B.
@@ -42,7 +42,7 @@ void calcul_local(double* force, particule* data, int N);
  * \param[in] data Les particules du groupe B
  * \param[in] N Le nombre de particules de chaque groupe.
  */
-void calcul_lointain(double* force, particule* buffer, particule* data, int N);
+void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N);
 
 /*!
  * \brief Copie les informations d'un tableau de particule vers un autre.
@@ -52,5 +52,9 @@ void calcul_lointain(double* force, particule* buffer, particule* data, int N);
 
  */ 
 void copier(particule* dst, particule* src, int size);
+
+void move_particules();
+
+void save_results();
 
 #endif

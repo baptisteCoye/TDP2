@@ -1,16 +1,16 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include"util.c"
+#include <stdio.h>
+#include <stdlib.h>
+#include "util.h"
 
-#Define N 100
-#Define dt 1 
+#define dt 1 
 int main(int argc, void** argv){
   particule* data;
-  vecteur forces[N];
+  vecteur* forces;
   int i, j;
 
-  data = readData(particule* data, file* file, N);
+  int N = readData(data,argv[1]);
   
+
 //Calcul des forces en séquentiel
   for( i = 0; i < N; i++){
     for( j = i+1; j < N; j++){
@@ -36,10 +36,10 @@ int main(int argc, void** argv){
     newPos.y = data[i].p.y + data[i].v.y*dt + acceleration.y*dt*dt/2;
     
 //affectation des nouvelles positions
-    data[i].p.x = newPos.x;
-    data[i].p.y = newPos.y;
-    data[i].v.x = newVitesse.x;
-    data[i].v.y = newVitesse.y;
+    data[i].px = newPos.x;
+    data[i].py = newPos.y;
+    data[i].vx = newVitesse.x;
+    data[i].vy = newVitesse.y;
   }
 
   return 1;

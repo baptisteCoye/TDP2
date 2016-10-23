@@ -4,15 +4,15 @@ vecteur force_interaction(particule A, particule B){
   
 }
 
-particule* readData(char* filename, int size){
+int readData(particule **_data, char* filename){
 
 }
 
-void calcul_local(double* force, particule* data, int N){
+void calcul_local(vecteur* force, particule* data, int N){
 
 }
 
-void calcul_lointain(double* force, particule buffer, particule* data, int N){
+void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N){
 
 }
 
@@ -21,3 +21,7 @@ void copier(particule* buffer, particule* data, int N){
     buffer[i] = data[i];
   }
 }
+
+void move_particules(){}
+
+void save_results(){}
