@@ -19,8 +19,24 @@ vecteur force_interaction(particule A, particule B){
   return res;
 }
 
-int readData(particule **_data, char* filename){
-
+particule* readData(char* filename, int* k){
+  int n;
+  int i = 0;
+  int ret;
+  double m, px, py, vx, vy;
+  FILE *file = fopen(filename, "r");
+  fscanf(file, "%d", &n);
+  particule* _data = malloc(sizeof(particule)*n);
+  while((ret = fscanf(file, "%lf %lf %lf %lf %lf", &m, &px, &py, &vx,&vy)) != EOF && ret != 0){
+    _data[i].m = m;
+    _data[i].px = px;
+    _data[i].py = py;
+    _data[i].vx = vx;
+    _data[i].vy = vy;
+    i++;
+  }
+  *k = n;
+  return _data;
 }
 
 void calcul_local(vecteur* force, particule* data, int N){

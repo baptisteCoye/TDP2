@@ -32,7 +32,8 @@ vecteur force_interaction(particule A, particule B);
  *
  * \return Le nombre de particules contenues dans le fichier.
  */
-int readData(particule** data, char* filename);
+
+particule* readData(char* filename, int* k);
 
 /*!
  * \brief Cacule les forces induites par un groupe de particule sur lui-meme.
