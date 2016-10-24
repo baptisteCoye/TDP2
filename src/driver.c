@@ -4,7 +4,6 @@
 #include "datatype.h"
 #include "util.h"
 
-#define G 6.67
 #define TAG 100
 
 int main(int argc, char **argv){
@@ -144,8 +143,10 @@ int main(int argc, char **argv){
     // Au bout de nbProc-1 iterations, on a l'ensemble des forces.
     // On applique ces forces aux particules.
     move_particules();
-    // On enregistre les resultats.
+    // On enregistre les resultats si necessaire.
+#ifdef TDP2_SAVE_RESULTS
     save_results();
+#endif
   }
 
   /////////////////////////////////////////////////////////////////////
