@@ -7,6 +7,16 @@
 #include"datatype.h"
 
 /*!
+ * \brief calcule la distance entre deux particules.
+ *
+ * \param A Une premiere particule
+ * \param B Une seconde particule
+ *
+ * \return La distance entre A et B
+ */
+double distance(particule A, particule B);
+
+/*!
  * \brief calcule l'interaction entre deux particules
  *
  * \param A La première particule
