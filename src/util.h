@@ -64,7 +64,7 @@ void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N);
  */ 
 void copier(particule* dst, particule* src, int size);
 
-void move_particules();
+void move_particules(particule * data, vecteur * force, int N, double dt);
 
 void save_results();
 
