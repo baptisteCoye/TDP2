@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(TDP2_PRCD)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -lm")
 
 option(TDP2_BUILD_TESTS "Set to ON to build the functionalities tests" ON)
 option(TDP2_SAVE_RESULTS "Set to ON to save the results of the program at each iteration" OFF)

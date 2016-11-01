@@ -4,6 +4,8 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<math.h>
+#include<mpi.h>
+
 #include"datatype.h"
 
 /*!
@@ -28,12 +30,13 @@ vecteur force_interaction(particule A, particule B);
  * \brief Lis les données sur les particules à l'état initial.
  *
  * \param[in] filename Le nom du fichier à ouvrir.
- * \param[out] data L'adresse du tableau à allouer et où stocker les données.
+ * \param[int] nbProc Le nombre de processeurs exécutant le programme.
+ * \param[out] data Le tableau contenant les particules locales.
+ * \param[out] nbPart Le nombre de particules dans data.
  *
- * \return Le nombre de particules contenues dans le fichier.
+ * \return Un code d'erreur, 0 si OK, -1 si KO
  */
-
-particule* readData(char* filename, int* k);
+int readData(char* filename, int nbProc, int myRank, particule ** data, int * nbPart, MPI_Datatype PARTICULE);
 
 /*!
  * \brief Cacule les forces induites par un groupe de particule sur lui-meme.

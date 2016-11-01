@@ -6,7 +6,10 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_BINARY_DIR}/src 
   ${CMAKE_SOURCE_DIR} 
   ${CMAKE_SOURCE_DIR}/src 
+  ${CMAKE_SOURCE_DIR}/tests/data
   )
 
-#add_executable(test_seq test_sequentiel.c)
-#target_link_libraries(test_seq util)
+add_executable(test_seq test_sequentiel.c)
+target_link_libraries(test_seq util)
+
+add_executable(t test.c)

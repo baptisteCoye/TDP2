@@ -5,6 +5,7 @@
 #include "util.h"
 
 #define TAG 100
+#define dt 1
 
 int main(int argc, char **argv){
 
@@ -36,6 +37,46 @@ int main(int argc, char **argv){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   //////////////////////////////////////////////////////////////////
+  ///             Creation du MPI_Datatype PARTICULE             ///
+  //////////////////////////////////////////////////////////////////
+
+  particule part[1];
+
+  MPI_Datatype types[7] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
+  int blocklengths[7] = {1,1,1,1,1,1,1};
+
+  MPI_Aint disps[7];
+
+  MPI_Aint i1,i2;
+
+  MPI_Get_address(&part[0], &i1);
+
+  MPI_Get_address(&part[0].m, &i2); disps[0] = i2-i1;
+
+  MPI_Get_address(&part[0].px, &i2); disps[1] = i2-i1;
+  MPI_Get_address(&part[0].py, &i2); disps[2] = i2-i1;
+
+  MPI_Get_address(&part[0].vx, &i2); disps[3] = i2-i1;
+  MPI_Get_address(&part[0].vy, &i2); disps[4] = i2-i1;
+
+  MPI_Get_address(&part[0].ax, &i2); disps[5] = i2-i1;
+  MPI_Get_address(&part[0].ay, &i2); disps[6] = i2-i1;
+  
+  MPI_Datatype PARTICULE;
+
+  err =  MPI_Type_struct(7, blocklengths, disps, types, &PARTICULE);
+  if (err != 0){
+    fprintf(stderr, "erreur lors du MPI_Type_struct() : err = %d", err);
+    return EXIT_FAILURE;
+  }
+
+  err = MPI_Type_commit(&PARTICULE);
+  if (err != 0){
+    fprintf(stderr, "erreur lors du MPI_Type_commit() : err = %d", err);
+    return EXIT_FAILURE;
+  }
+
+  //////////////////////////////////////////////////////////////////
   ///           Creation du MPI_Datatype V_PARTICULE             ///
   //////////////////////////////////////////////////////////////////
 
@@ -45,8 +86,6 @@ int main(int argc, char **argv){
   int blocklen[3] = {1,1,1};
 
   MPI_Aint disp[3];
-
-  MPI_Aint i1,i2;
 
   MPI_Get_address(&p[0], &i1);
   MPI_Get_address(&p[0].m, &i2); disp[0] = i2-i1;
@@ -71,7 +110,7 @@ int main(int argc, char **argv){
   /// Lecture du fichier et allocation des tableaux et buffers  ///
   /////////////////////////////////////////////////////////////////
 
-  nbParticules = readData(&data, argv[2]);
+  err = readData(argv[2], nbProc, rank, &data, &nbParticules, PARTICULE);
 
   nbPartPerProc = nbParticules / nbProc;
 
@@ -142,7 +181,7 @@ int main(int argc, char **argv){
 
     // Au bout de nbProc-1 iterations, on a l'ensemble des forces.
     // On applique ces forces aux particules.
-    move_particules();
+    move_particules(data,force, nbPartPerProc, dt);
     // On enregistre les resultats si necessaire.
 #ifdef TDP2_SAVE_RESULTS
     save_results();

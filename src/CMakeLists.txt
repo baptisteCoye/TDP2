@@ -6,13 +6,16 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_BINARY_DIR}/src 
   ${CMAKE_SOURCE_DIR} 
   ${CMAKE_SOURCE_DIR}/src 
-  ${MPI_INCLUDE_PATH}
   )
 
 add_library(util SHARED util.c)
+target_link_libraries(util m ${MPI_LIBRARIES})
 
 add_executable(driver driver.c)
 target_link_libraries(driver util ${MPI_LIBRARIES})
+
+add_executable(randFile randomFile.c)
+target_link_libraries(randFile util)
 
 if(MPI_COMPILE_FLAGS)
   set_target_properties(driver PROPERTIES

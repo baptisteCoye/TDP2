@@ -1,0 +1,1 @@
+char * RAVCITESTDataPath("@CMAKE_SOURCE_DIR@/tests/data/");

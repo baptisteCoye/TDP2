@@ -19,24 +19,54 @@ vecteur force_interaction(particule A, particule B){
   return res;
 }
 
-particule* readData(char* filename, int* k){
-  int n;
-  int i = 0;
-  int ret;
-  double m, px, py, vx, vy;
-  FILE *file = fopen(filename, "r");
-  fscanf(file, "%d", &n);
-  particule* _data = malloc(sizeof(particule)*n);
-  while((ret = fscanf(file, "%lf %lf %lf %lf %lf", &m, &px, &py, &vx,&vy)) != EOF && ret != 0){
-    _data[i].m = m;
-    _data[i].px = px;
-    _data[i].py = py;
-    _data[i].vx = vx;
-    _data[i].vy = vy;
-    i++;
+int readData(char* filename, int nbProc, int myRank, particule ** data, int * nbPart, MPI_Datatype PARTICULE){
+  particule * buffer;
+  int i, j, k; 
+  MPI_Status status;
+  FILE * file;
+  int nbPartPerProc;
+
+  if (myRank == 0){
+    file = fopen(filename, "r");
+    if (file == NULL){
+      fprintf(stderr, "erreur lors de l'ouverture du fichier.\n");
+      return -1;
+    }
+    
+    fscanf(file, "%d\n", nbPart);
+    
+    if (*nbPart < nbProc){
+      fprintf(stderr, "Pas assez de particules pour occuper tous les processeurs. Diminuez le nombre de processeurs.\n");
+      return -1;
+    }
+    if ((*nbPart % nbProc) != 0){
+      fprintf(stderr, "Le nombre de particules n'est pas un multiple du nombre de processeurs, le cas n'est pas géré.\n");
+      return -1;
+    }
   }
-  *k = n;
-  return _data;
+
+  nbPartPerProc = *nbPart / nbProc;
+
+  MPI_Bcast(nbPart, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  *(data) = malloc(sizeof(particule) * nbPartPerProc);
+
+  if (myRank == 0){
+    for (k = 0; k < nbProc - 1; k++){
+
+      for (i = 0; i < nbPartPerProc; i++){
+	fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
+      }
+      MPI_Send(data, nbPartPerProc, PARTICULE, i+1, 100, MPI_COMM_WORLD);
+
+    }
+
+    for (i = 0; i < nbPartPerProc; i++){
+      fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
+    }
+    
+  } else {
+    MPI_Recv(data, nbPartPerProc, PARTICULE, 0, 100, MPI_COMM_WORLD, &status);
+  }
 }
 
 void calcul_local(vecteur* force, particule* data, int N){
@@ -76,14 +106,14 @@ void copier(particule* buffer, particule* data, int N){
 
 void move_particules(particule * data, vecteur * force, int N, double dt){
   for (int i = 0; i < N; i++){
-    data.ax = force[i].x / data[i].m;
-    data.ay = force[i].y / data[i].m;
+    data[i].ax = force[i].x / data[i].m;
+    data[i].ay = force[i].y / data[i].m;
 
-    data.px += data.vx*dt + data.ax*dt*dt/2;
-    data.py += data.vy*dt + data.ay*dt*dt/2;
+    data[i].px += data[i].vx*dt + data[i].ax*dt*dt/2;
+    data[i].py += data[i].vy*dt + data[i].ay*dt*dt/2;
 
-    data.vx += data.ax*dt;
-    data.vy += data.ay.dt;
+    data[i].vx += data[i].ax*dt;
+    data[i].vy += data[i].ay*dt;
   }
 }
 
