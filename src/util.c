@@ -216,6 +216,8 @@ double determine_dt_forall(particule* data, vecteur* force, int N, double* distM
 
     if (nbProc > 1)
       MPI_Allreduce(&dt, &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    else 
+      dtTot = dt;
 
     return dtTot;
 }

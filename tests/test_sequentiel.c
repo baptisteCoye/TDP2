@@ -61,13 +61,7 @@ int main(int argc, void** argv){
     printf("     determination du dt ... ");
 #endif
 
-    for (int i = 0; i < N; i++){
-      dtTmp = determine_dt(data[i], forces[i], distMin[i]);
-      if (dtTmp < dt)
-	dt = dtTmp;
-    }
-    if (dt < DT_MIN)
-      dt = DT_MIN;
+    dt = determine_dt_forall(data, forces, N, distMin, 1);
 
 #if VERBOSE >= 2
     printf("%lf\n", dt);
