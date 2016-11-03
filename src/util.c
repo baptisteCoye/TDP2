@@ -178,6 +178,10 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
   return 0;
 }
 
+double max(double a, double b){
+    if(a < b) return b;
+    else return a;
+}
 
 double determine_dt(particule data, vecteur force, double distMin){
     double dtx;
@@ -187,15 +191,22 @@ double determine_dt(particule data, vecteur force, double distMin){
     double discry = data.vy*data.vy + 4*data.ay*distMin;
     double discrInvy = data.vy*data.vy - 4*data.ay*distMin;
 
-    if (discrx > discrInvx) {
-      dtx = (-data.vx+sqrt(discrx))/(2*data.ax);
+    if (discrx > 0 && discrInvx > 0) {
+        dtx = max(((-data.vx + sqrt(discrx)) / (2 * data.ax)),((-data.vx + sqrt(discrx))/(2*data.ax)));
+    }
+    else if (discrx > discrInvx){
+        dtx = (data.vx + sqrt(discrx))/(2*data.ax);
     }
     else dtx = (data.vx + sqrt(discrInvx))/(2*data.ax);
 
-    if (discry > discrInvy) {
-      dty = (-data.vy+sqrt(discry))/(2*data.ax);
+    if (discry > 0 && discrInvy > 0) {
+        dty = max(((-data.vy + sqrt(discry)) / (2 * data.ay)),((-data.vy + sqrt(discry))/(2*data.ay)));
     }
-    else dty = (data.vy + sqrt(discrInvy))/(2*data.ax);
+
+    else if (discry > discrInvy) {
+      dty = (-data.vy+sqrt(discry))/(2*data.ay);
+    }
+    else dty = (data.vy + sqrt(discrInvy))/(2*data.ay);
 
     if(dtx < dty)
       return dtx;
