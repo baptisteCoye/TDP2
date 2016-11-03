@@ -301,6 +301,8 @@ int main(int argc, char **argv){
     printf("\n");
 #endif
 
+    accelerate(data,force,nbPartPerProc);
+
     dt = determine_dt_forall(data, force, nbPartPerProc, distMin, nbProc);
 
 #if VERBOSE >= 2
