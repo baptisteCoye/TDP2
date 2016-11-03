@@ -290,13 +290,13 @@ int main(int argc, char **argv){
     // On enregistre les resultats si necessaire.
 #ifdef SAVE_RESULTS
     char * filename = malloc(sizeof(char) * 20);
-    snprintf(filename, 20, "save_par_%d.txt", i);
+    snprintf(filename, 20, "save_par_%d.txt", n);
 
 #if VERBOSE >= 1
     printf("     :%d: sauvegarde des donnees\n", rank);
 #endif /* VERBOSE >= 1 */
 
-    err = save_results(data, nbPartPerProc, filename, size, nbProc, rank, PARTICULE);
+    err = save_results(data, nbPartPerProc, filename, nbProc, rank, PARTICULE);
     if (err != 0){
       fprintf(stderr, "erreur lors de la sauvegarde du fichier.\n");
       return EXIT_FAILURE;

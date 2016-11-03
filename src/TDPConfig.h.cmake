@@ -7,4 +7,6 @@ char testDataPath [] = "@CMAKE_SOURCE_DIR@/tests/data/";
 
 #cmakedefine VERBOSE @PROJET_VERBOSE@
 
+#cmakedefine SAVE_RESULTS
+
 #endif
