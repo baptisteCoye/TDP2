@@ -130,7 +130,7 @@ int main(int argc, char **argv){
   ///                  Affichage des input                      ///
   /////////////////////////////////////////////////////////////////
 
-#if VERBOSE == 1
+#if VERBOSE >= 1
   if (rank == 0){
     printf("nombre de particules dans le fichier : %d\n", nbParticules);
     printf("nombre de processus actifs : %d\n", nbProc);
@@ -138,7 +138,7 @@ int main(int argc, char **argv){
   printf("processeur numéro :%d:, contient %d particules\n", rank, nbPartPerProc);
 #endif
 
-#if VERBOSE == 2
+#if VERBOSE >= 2
   if (rank == 0){
     printf("particules lues : (%d) \n", nbPartPerProc);
     for (int i = 0; i < nbPartPerProc; i++){
@@ -152,38 +152,45 @@ int main(int argc, char **argv){
   ///               Creation des requetes MPI                   ///
   /////////////////////////////////////////////////////////////////
 
-  // Envoie depuis le buffer 0
-  err = MPI_Send_init(buffer[0], nbPartPerProc, V_PARTICULE, (rank+1)%nbProc, TAG, MPI_COMM_WORLD, &sendRequests[0]);
-  if (err != 0){
-    fprintf(stderr, "Erreur detectee dans MPI_Send_init 0. err = %d\n", err);
-    return EXIT_FAILURE;
-  }
-  // Envoie depuis le buffer 1
-  err = MPI_Send_init(buffer[1], nbPartPerProc, V_PARTICULE, (rank+1)%nbProc, TAG, MPI_COMM_WORLD, &sendRequests[1]);
-  if (err != 0){
-    fprintf(stderr, "Erreur detectee dans MPI_Send_init 1. err = %d\n", err);
-    return EXIT_FAILURE;
+  if (nbProc > 1){
+
+    // Envoie depuis le buffer 0
+    err = MPI_Send_init(buffer[0], nbPartPerProc, V_PARTICULE, (rank+1)%nbProc, TAG, MPI_COMM_WORLD, &sendRequests[0]);
+    if (err != 0){
+      fprintf(stderr, "Erreur detectee dans MPI_Send_init 0. err = %d\n", err);
+      return EXIT_FAILURE;
+    }
+    // Envoie depuis le buffer 1
+    err = MPI_Send_init(buffer[1], nbPartPerProc, V_PARTICULE, (rank+1)%nbProc, TAG, MPI_COMM_WORLD, &sendRequests[1]);
+    if (err != 0){
+      fprintf(stderr, "Erreur detectee dans MPI_Send_init 1. err = %d\n", err);
+      return EXIT_FAILURE;
+    }
+
+    // Réception sur le buffer 0
+    err = MPI_Recv_init(buffer[0], nbPartPerProc, V_PARTICULE, (rank-1)%nbProc, TAG, MPI_COMM_WORLD, &recvRequests[0]);
+    if (err != 0){
+      fprintf(stderr, "Erreur detectee dans MPI_Recv_init 0. err = %d\n", err);
+      return EXIT_FAILURE;
+    }
+
+    // Réception sur le buffer 1
+    err = MPI_Recv_init(buffer[1], nbPartPerProc, V_PARTICULE, (rank-1)%nbProc, TAG, MPI_COMM_WORLD, &recvRequests[1]);
+    if (err != 0){
+      fprintf(stderr, "Erreur detectee dans MPI_Recv_init 1. err = %d\n", err);
+      return EXIT_FAILURE;
+    }
   }
 
-  // Réception sur le buffer 0
-  err = MPI_Recv_init(buffer[0], nbPartPerProc, V_PARTICULE, (rank-1)%nbProc, TAG, MPI_COMM_WORLD, &recvRequests[0]);
-  if (err != 0){
-    fprintf(stderr, "Erreur detectee dans MPI_Recv_init 0. err = %d\n", err);
-    return EXIT_FAILURE;
-  }
-
-  // Réception sur le buffer 1
-  err = MPI_Recv_init(buffer[1], nbPartPerProc, V_PARTICULE, (rank-1)%nbProc, TAG, MPI_COMM_WORLD, &recvRequests[1]);
-  if (err != 0){
-    fprintf(stderr, "Erreur detectee dans MPI_Recv_init 1. err = %d\n", err);
-    return EXIT_FAILURE;
-  }
-  
   ///////////////////////////////////////////////////////////////////
   ///              Debut des iterations de calcul                 ///
   ///////////////////////////////////////////////////////////////////
 
   for (int n = 0; n < atoi(argv[1]); n++){
+#if VERBOSE >= 1
+    if (rank == 0)
+      printf("iteration %d\n", n);
+#endif
 
     // Initialisation des forces a 0 et des distances à -1
     for (int i = 0; i < nbPartPerProc; i++){
@@ -192,35 +199,43 @@ int main(int argc, char **argv){
       distMin[i] = -1;
     }
 
-    // On copie les donnees possedees par le processus dans son buffer.
-    copier(buffer[0], data, nbPartPerProc);
+    if (nbProc > 1){
+      // On copie les donnees possedees par le processus dans son buffer.
+      copier(buffer[0], data, nbPartPerProc);
 
-    // On demarre les requetes MPI pour l'envoi et la reception des donnees.
-    err = MPI_Start(&sendRequests[0]);
-    if (err != 0){
-      fprintf(stderr, "Erreur detectee dans MPI_start_Send 0. err = %d\n", err);
-      return EXIT_FAILURE;
+      // On demarre les requetes MPI pour l'envoi et la reception des donnees.
+      err = MPI_Start(&sendRequests[0]);
+      if (err != 0){
+	fprintf(stderr, "Erreur detectee dans MPI_start_Send 0. err = %d\n", err);
+	return EXIT_FAILURE;
+      }
+      err = MPI_Start(&recvRequests[1]);
+      if (err != 0){
+	fprintf(stderr, "Erreur detectee dans MPI_start_recv 1. err = %d\n", err);
+	return EXIT_FAILURE;
+      }
     }
-    err = MPI_Start(&recvRequests[1]);
-    if (err != 0){
-      fprintf(stderr, "Erreur detectee dans MPI_start_recv 1. err = %d\n", err);
-      return EXIT_FAILURE;
-    }
+
+#if VERBOSE >= 1
+    printf("     :%d: calcul des forces ...\n", rank);
+#endif
 
     // Pendant que le MPI gere l'envoi des donnees, on calcule
     // les forces entre les particules dans data et elles memes.
     calcul_local(force, data, nbPartPerProc, distMin);
 
-    // Une fois que le calcul est fini, on attend la fin des echanges.
-    err = MPI_Wait(&sendRequests[0], &status);
-    if (err != 0){
-      fprintf(stderr, "Erreur detectee dans MPI_wait_Send 0. err = %d\n", err);
-      return EXIT_FAILURE;
-    }
-    err = MPI_Wait(&recvRequests[1], &status);
-    if (err != 0){
-      fprintf(stderr, "Erreur detectee dans MPI_wait_recv 1. err = %d\n", err);
-      return EXIT_FAILURE;
+    if (nbProc > 1){
+      // Une fois que le calcul est fini, on attend la fin des echanges.
+      err = MPI_Wait(&sendRequests[0], &status);
+      if (err != 0){
+	fprintf(stderr, "Erreur detectee dans MPI_wait_Send 0. err = %d\n", err);
+	return EXIT_FAILURE;
+      }
+      err = MPI_Wait(&recvRequests[1], &status);
+      if (err != 0){
+	fprintf(stderr, "Erreur detectee dans MPI_wait_recv 1. err = %d\n", err);
+	return EXIT_FAILURE;
+      }
     }
 
     // Debut des iterations de calcul sur les donnees des autres processus.
@@ -237,7 +252,7 @@ int main(int argc, char **argv){
 	fprintf(stderr, "Erreur detectee dans MPI_start_recv %d. err = %d\n", (i+1)%2, err);
 	return EXIT_FAILURE;
       }
-      
+            
       // Pendant que le MPI gere l'envoi des donnees, on calcule
       // les forces entre les particules de data et celles reçues precedemment.
       calcul_lointain(force, buffer[i%2], data, nbPartPerProc, distMin);
@@ -255,22 +270,38 @@ int main(int argc, char **argv){
       }
     }
 
-    dt = determine_dt_forall(data, force, nbPartPerProc, distMin);
+#if VERBOSE >= 1
+    printf("     :%d: determination du dt ... ", rank);
+#endif
+    dt = determine_dt_forall(data, force, nbPartPerProc, distMin, nbProc);
+
+
+#if VERBOSE >= 2
+    printf("%lf\n", dt);
+#endif
+
+#if VERBOSE >= 1
+    printf("     :%d: deplacement des particules\n", rank);
+#endif
 
     // Au bout de nbProc-1 iterations, on a l'ensemble des forces.
     // On applique ces forces aux particules.
     move_particules(data,force, nbPartPerProc, dt);
     // On enregistre les resultats si necessaire.
-#ifdef TDP2_SAVE_RESULTS
+#ifdef SAVE_RESULTS
     char * filename = malloc(sizeof(char) * 20);
     snprintf(filename, 20, "save_par_%d.txt", i);
+
+#if VERBOSE >= 1
+    printf("     :%d: sauvegarde des donnees\n", rank);
+#endif /* VERBOSE >= 1 */
 
     err = save_results(data, nbPartPerProc, filename, size, nbProc, rank, PARTICULE);
     if (err != 0){
       fprintf(stderr, "erreur lors de la sauvegarde du fichier.\n");
       return EXIT_FAILURE;
     }
-#endif
+#endif /* TDP2_SAVE_RESULTS */
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -284,6 +315,7 @@ int main(int argc, char **argv){
   free(force);
 
   // Fin du MPI
+  MPI_Type_free(&PARTICULE);
   MPI_Type_free(&V_PARTICULE);
   MPI_Finalize();
   return 0;

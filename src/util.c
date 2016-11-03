@@ -199,7 +199,7 @@ double determine_dt(particule data, vecteur force, double distMin){
       return dty;
 }
 
-double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin){
+double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin, int nbProc){
     int i;
     double dt = DT_MAX;
     double dtTmp;
@@ -214,7 +214,8 @@ double determine_dt_forall(particule* data, vecteur* force, int N, double* distM
     if (dt < DT_MIN)
       dt = DT_MIN;
 
-    MPI_Allreduce(&dt, &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    if (nbProc > 1)
+      MPI_Allreduce(&dt, &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
 
     return dtTot;
 }

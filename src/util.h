@@ -81,6 +81,6 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
 
 double determine_dt(particule data, vecteur force, double distMin);
 
-double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin);
+double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin, int nbProc);
 
 #endif

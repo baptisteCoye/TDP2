@@ -3,8 +3,8 @@ project(TDP2_PRCD)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -lm")
 
-option(TDP2_BUILD_TESTS "Set to ON to build the functionalities tests" ON)
-option(TDP2_SAVE_RESULTS "Set to ON to save the results of the program at each iteration" OFF)
+option(BUILD_TESTS "Set to ON to build the functionalities tests" ON)
+option(SAVE_RESULTS "Set to ON to save the results of the program at each iteration" OFF)
 
 set(PROJET_VERBOSE 0 CACHE INT "verbose. 0 : no information; 1 : some input and output; 2 : all data")
 set(VERBOSE ON)
@@ -15,7 +15,7 @@ include_directories(${MPI_INCLUDE_PATH})
 
 add_subdirectory(src)
 
-if(TDP2_BUILD_TESTS)
+if(BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
