@@ -150,6 +150,19 @@ int main(int argc, char **argv){
   }
 #endif
 
+
+#ifdef SAVE_RESULTS
+  char * initfilename = malloc(sizeof(char) * 20);
+  snprintf(initfilename, 20, "save_par_0.csv");
+    
+  err = save_results(data, nbPartPerProc, initfilename, nbProc, rank, PARTICULE);
+  if (err != 0){
+    fprintf(stderr, "erreur lors de la sauvegarde du fichier.\n");
+    return EXIT_FAILURE;
+  }
+  free(initfilename);
+#endif /* TDP2_SAVE_RESULTS */
+
   /////////////////////////////////////////////////////////////////
   ///               Creation des requetes MPI                   ///
   /////////////////////////////////////////////////////////////////
@@ -198,7 +211,7 @@ int main(int argc, char **argv){
     for (int i = 0; i < nbPartPerProc; i++){
       force[i].x = 0.0;
       force[i].y = 0.0;
-      distMin[i] = -1;
+      distMin[i] = -1.0;
     }
 
     if (nbProc > 1){
@@ -222,9 +235,22 @@ int main(int argc, char **argv){
     printf("     :%d: calcul des forces ...\n", rank);
 #endif
 
+    printf("distMin : ");
+    for (int i = 0; i < nbPartPerProc; i++)
+      printf("%lf  ", distMin[i]);
+    printf("\n");
+
     // Pendant que le MPI gere l'envoi des donnees, on calcule
     // les forces entre les particules dans data et elles memes.
     calcul_local(force, data, nbPartPerProc, distMin);
+
+    for (int i = 0; i < nbPartPerProc; i++)
+      if (distMin[i] < 0)
+	printf("caca boudind %d, %lf\n", i, distMin[i]);
+
+#if VERBOSE >= 1
+    printf("     :%d: calcul des forces ...\n", rank);
+#endif
 
     if (nbProc > 1){
       // Une fois que le calcul est fini, on attend la fin des echanges.
@@ -299,7 +325,7 @@ int main(int argc, char **argv){
     // On enregistre les resultats si necessaire.
 #ifdef SAVE_RESULTS
     char * filename = malloc(sizeof(char) * 20);
-    snprintf(filename, 20, "save_par_%d.txt", n);
+    snprintf(filename, 20, "save_par_%d.csv", n+1);
 
 #if VERBOSE >= 1
     printf("     :%d: sauvegarde des donnees\n", rank);
@@ -310,6 +336,8 @@ int main(int argc, char **argv){
       fprintf(stderr, "erreur lors de la sauvegarde du fichier.\n");
       return EXIT_FAILURE;
     }
+
+    free(filename);
 #endif /* TDP2_SAVE_RESULTS */
   }
 

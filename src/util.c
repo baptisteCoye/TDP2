@@ -82,29 +82,34 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
 void calcul_local(vecteur* force, particule* data, int N, double* distMin){
 
   vecteur tmp;
-
-  for (int i = 0; i < N; i++){
-    distMin[i] = -1;
-  }
+  double distTmp;
 
   for (int i = 0; i < N; i++){
     for (int j = i+1; j < N; j++){
-      if (i != j){
-	double distTmp;
-        tmp = force_interaction(data[i], data[j], &distTmp);
-        if (distTmp < distMin[i] || distMin[i] == -1){
-          distMin[i] = distTmp;
-        }
-        if (distTmp < distMin[j] || distMin[j] == -1){
-          distMin[j] = distTmp;
-        }
-        force[i].x += tmp.x;
-	    force[i].y += tmp.y;
-	    force[j].x -= tmp.x;
-	    force[j].y -= tmp.y;
+      tmp = force_interaction(data[i], data[j], &distTmp);
+
+      if ((distTmp < distMin[i]) || (distMin[i] < 0)){
+	distMin[i] = distTmp;
       }
+      if ((distTmp < distMin[j]) || (distMin[j] < 0)){
+	distMin[j] = distTmp;
+      }
+
+      if (i == 2) 
+	printf("i : distTmp = %lf, distMin[i] = %lf\n", distTmp, distMin[2]);
+      if (j == 2)
+	printf("j : distTmp = %lf, distMin[j] = %lf\n", distTmp, distMin[2]);
+      /*
+      force[i].x += tmp.x;
+      force[i].y += tmp.y;
+      force[j].x -= tmp.x;
+      force[j].y -= tmp.y;      
+      */
     }
+    printf("%lf\n", distMin[2]);
   }
+
+  printf("%lf\n", distMin[2]);
 }
 
 void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N, double* distMin){
@@ -156,11 +161,11 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
     }
     
     //    fprintf(file, "%d\n", N*nbProc);
-    fprintf(file, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN %d %d %d\nSPACING %d %d %d\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default\n", N*nbProc, -500, -500, 0, 1, 1, 1, 2*N*nbProc);
+    fprintf(file, "X,Y\n");
 
     for (i = 0; i < N; i++){
       //      fprintf(file, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
-      fprintf(file, "%lf %lf\n", data[i].px, data[i].py);
+      fprintf(file, "%lf,%lf\n", data[i].px, data[i].py);
     }
 
     for (k = 0; k < nbProc - 1; k++){
