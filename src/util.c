@@ -95,21 +95,14 @@ void calcul_local(vecteur* force, particule* data, int N, double* distMin){
 	distMin[j] = distTmp;
       }
 
-      if (i == 2) 
-	printf("i : distTmp = %lf, distMin[i] = %lf\n", distTmp, distMin[2]);
-      if (j == 2)
-	printf("j : distTmp = %lf, distMin[j] = %lf\n", distTmp, distMin[2]);
-      /*
+      
       force[i].x += tmp.x;
       force[i].y += tmp.y;
       force[j].x -= tmp.x;
       force[j].y -= tmp.y;      
-      */
+      
     }
-    printf("%lf\n", distMin[2]);
   }
-
-  printf("%lf\n", distMin[2]);
 }
 
 void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N, double* distMin){

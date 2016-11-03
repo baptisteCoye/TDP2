@@ -125,7 +125,7 @@ int main(int argc, char **argv){
 
   buffer[0] = malloc(sizeof(particule) * nbPartPerProc);
   buffer[1] = malloc(sizeof(particule) * nbPartPerProc);
-  force = malloc(sizeof(double) * nbPartPerProc);
+  force = malloc(sizeof(vecteur) * nbPartPerProc);
   distMin = malloc(sizeof(double) * nbPartPerProc);
 
   /////////////////////////////////////////////////////////////////
@@ -235,18 +235,10 @@ int main(int argc, char **argv){
     printf("     :%d: calcul des forces ...\n", rank);
 #endif
 
-    printf("distMin : ");
-    for (int i = 0; i < nbPartPerProc; i++)
-      printf("%lf  ", distMin[i]);
-    printf("\n");
-
     // Pendant que le MPI gere l'envoi des donnees, on calcule
     // les forces entre les particules dans data et elles memes.
     calcul_local(force, data, nbPartPerProc, distMin);
 
-    for (int i = 0; i < nbPartPerProc; i++)
-      if (distMin[i] < 0)
-	printf("caca boudind %d, %lf\n", i, distMin[i]);
 
 #if VERBOSE >= 1
     printf("     :%d: calcul des forces ...\n", rank);
