@@ -105,10 +105,11 @@ void calcul_local(vecteur* force, particule* data, int N, double* distMin){
 
 void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N, double* distMin){
   vecteur tmp;
+  double distTmp;
 
   for (int i = 0; i < N; i++){
     for (int j = 0; j < N; j++){
-      tmp = force_interaction(data[i], buffer[j]);
+      tmp = force_interaction(data[i], buffer[j], &distTmp);
       force[i].x += tmp.x;
       force[i].y += tmp.y;
       if (distTmp < distMin[i] || distMin[i] == -1){
@@ -188,21 +189,26 @@ double determine_dt(particule data, vecteur force, double distMin){
     double discrInvy = data.vy*data.vy - 4*data.ay*distMin;
 
     if (discrx > 0) {
-        dtx = -vx+sqrt(discr);
+        dtx = -data.vx+sqrt(discrx);
     }
-    else dtx = vx + sqrt(discrInvx);
+    else dtx = data.vx + sqrt(discrInvx);
 
     if (discry > 0) {
-        dty = -vy+sqrt(discry);
+        dty = -data.vy+sqrt(discry);
     }
-    else dty = vy + sqrt(discrInvy);
+    else dty = data.vy + sqrt(discrInvy);
 
-    return min(dtx, dty);
+    if(dtx < dty)
+      return dtx;
+    else 
+      return dty;
 }
 
 double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin){
     int i;
     double dt = -1;
+    double dtTmp;
+    
     for (i = 0; i < N; i++){
         dtTmp = determine_dt(data[i], force[i], distMin[i]);
         if (dtTmp == -1 || dt < dtTmp){

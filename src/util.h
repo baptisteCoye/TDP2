@@ -21,10 +21,11 @@ double distance(particule A, particule B);
 /*!
  * \brief calcule l'interaction entre deux particules
  *
- * \param A La première particule
- * \param B La deuxième particule
+ * \param[in] A La première particule
+ * \param[in] B La deuxième particule
+ * \param[out] distance La distance entre les deux particules
  */
-vecteur force_interaction(particule A, particule B);
+vecteur force_interaction(particule A, particule B, double * distance);
 
 /*!
  * \brief Lis les données sur les particules à l'état initial.
@@ -45,8 +46,9 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
  * \param[in] data Les particules sur lesquelles nous calculons.
  * \param[in] N Le nombre de particules à considérer.
  * \param[out] force Les valeurs des forces sur les particules.
+ * \param[out] distances Les distances entre chaque particule et leur plus proches voisins.
  */
-void calcul_local(vecteur* force, particule* data, int N);
+void calcul_local(vecteur* force, particule* data, int N, double *distances);
 
 /*!
  * \brief Calcule les forces induites par un groupe de particules A sur un autre groupe B.
@@ -55,8 +57,10 @@ void calcul_local(vecteur* force, particule* data, int N);
  * \param[in] buffer Les particules du groupe A
  * \param[in] data Les particules du groupe B
  * \param[in] N Le nombre de particules de chaque groupe.
+ * \param[out] force Les forces appliquees sur chaque particule.
+ * \param[out] distMin Les distance entre chaque particule et son plus proche voisin.
  */
-void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N);
+void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N, double * distMin);
 
 /*!
  * \brief Copie les informations d'un tableau de particule vers un autre.
