@@ -183,30 +183,20 @@ double max(double a, double b){
     else return a;
 }
 
+double determine_rac_max(double a, double b, double c){
+    double det = b*b - 4*a*c;
+    if(det < 0){
+        return 0;
+    }
+    else return ((-b + sqrt(det))/(2*a));
+}
+
 double determine_dt(particule data, vecteur force, double distMin){
     double dtx;
     double dty;
-    double discrx = data.vx*data.vx + 4*data.ax*distMin;
-    double discrInvx = data.vx*data.vx - 4*data.ax*distMin;
-    double discry = data.vy*data.vy + 4*data.ay*distMin;
-    double discrInvy = data.vy*data.vy - 4*data.ay*distMin;
 
-    if (discrx > 0 && discrInvx > 0) {
-        dtx = max(((-data.vx + sqrt(discrx)) / (2 * data.ax)),((-data.vx + sqrt(discrx))/(2*data.ax)));
-    }
-    else if (discrx > discrInvx){
-        dtx = (data.vx + sqrt(discrx))/(2*data.ax);
-    }
-    else dtx = (data.vx + sqrt(discrInvx))/(2*data.ax);
-
-    if (discry > 0 && discrInvy > 0) {
-        dty = max(((-data.vy + sqrt(discry)) / (2 * data.ay)),((-data.vy + sqrt(discry))/(2*data.ay)));
-    }
-
-    else if (discry > discrInvy) {
-      dty = (-data.vy+sqrt(discry))/(2*data.ay);
-    }
-    else dty = (data.vy + sqrt(discrInvy))/(2*data.ay);
+    dtx = max(determine_rac_max((data.ax/2),data.vx,-distMin), determine_rac_max(-(data.ax/2),-data.vx,-distMin));
+    dty = max(determine_rac_max((data.ay/2),data.vy,-distMin), determine_rac_max(-(data.ay/2),-data.vy,-distMin));
 
     if(dtx < dty)
       return dtx;
@@ -223,7 +213,7 @@ double determine_dt_forall(particule* data, vecteur* force, int N, double* distM
     for (i = 0; i < N; i++){
       dtTmp = determine_dt(data[i], force[i], distMin[i]/sqrt(2));
       if (dtTmp < dt){
-	dt = dtTmp;
+	    dt = dtTmp;
       }
     }
     /* if (dt < DT_MIN) */
