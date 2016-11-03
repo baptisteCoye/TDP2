@@ -3,15 +3,18 @@
 
 #include "datatype.h"
 #include "util.h"
+#include "TDPConfig.h"
 
-#define dt 1 
 #define FILENAME "../tests/data/file_test.txt"
 #define NB_ITER 100
 
 int main(int argc, void** argv){
   int N;
-  particule* data;
-  vecteur* forces;
+  particule * data;
+  vecteur * forces;
+  double * distMin;
+  double dt;
+  int err; 
 
   FILE * readfile = fopen(FILENAME, "r");
   if (readfile == NULL){
@@ -19,33 +22,35 @@ int main(int argc, void** argv){
     return EXIT_FAILURE;
   }
 
-  fscanf(readfile, "%d\n", &N);
+  err = fscanf(readfile, "%d\n", &N);
+  fprintf(stderr, "Erreur lors de la lecture dans le fichier.\n");
+
   data = malloc(sizeof(particule) * N);
   forces = malloc(sizeof(vecteur) * N);
+  distMin = malloc(sizeof(double) * N);
 
   for (int i = 0; i < N; i++){
-    fscanf(readfile, "%lf %lf %lf %lf %lf\n", &(data[i].m), &(data[i].px), &(data[i].py), &(data[i].vx), &(data[i].vy));
-    printf(" line read : %lf %lf %lf %lf %lf\n", (data[i].m), (data[i].px), (data[i].py), (data[i].vx), (data[i].vy));
+    err = fscanf(readfile, "%lf %lf %lf %lf %lf\n", &(data[i].m), &(data[i].px), &(data[i].py), &(data[i].vx), &(data[i].vy));
+    fprintf(stderr, "Erreur lors de la lecture dans le fichier.\n");
   }
 
   fclose(readfile);
 
   for (int i = 0; i < NB_ITER; i++){
-    calcul_local(forces, data, N);
-    if (i == 0){
-      for (int i = 0; i < N; i++){
-	printf(" %lf %lf %lf %lf %lf\n", (data[i].m), (data[i].px), (data[i].py), (data[i].vx), (data[i].vy));
-      }
-      printf("\n");
+    dt = DT_MAX;
+    calcul_local(forces, data, N, distMin);
+
+    double dtTmp;
+
+    for (int i = 0; i < N; i++){
+      dtTmp = determine_dt(data[i], forces[i], distMin[i]);
+      if (dtTmp < dt)
+	dt = dtTmp;
     }
+    if (dt < DT_MIN)
+      dt = DT_MIN;
 
     move_particules(data, forces, N, dt);
-    if (i == 0){
-      for (int i = 0; i < N; i++){
-	printf(" %lf %lf %lf %lf %lf\n", (data[i].m), (data[i].px), (data[i].py), (data[i].vx), (data[i].vy));
-      }
-      printf("\n");
-    }
 
     char * filename = malloc(sizeof(char) * 20);
     snprintf(filename, 20, "save_seq_%d.txt", i);    
@@ -66,5 +71,3 @@ int main(int argc, void** argv){
 
   return 0;
 }
-
-  

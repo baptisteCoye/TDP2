@@ -3,9 +3,8 @@
 #include <mpi.h>
 #include "datatype.h"
 #include "util.h"
-
+#include "TDPConfig.h"
 #define TAG 100
-#define dt 1
 
 int main(int argc, char **argv){
 
@@ -30,6 +29,8 @@ int main(int argc, char **argv){
   MPI_Request sendRequests[2];
   MPI_Request recvRequests[2];
   int nbPartPerProc;
+  double * distMin;
+  double dt;
 
   MPI_Init(NULL,NULL);
 
@@ -116,11 +117,24 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
 
+  printf("%d\n", VERBOSE);
+
+#if VERBOSE == 2
+  if (rank == 0){
+    printf("particules lues : \n");
+    for (int i = 0; i < nbPartPerProc; i++){
+      printf("    %lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+    }
+    printf("\n");
+  }
+#endif
+
   nbPartPerProc = nbParticules / nbProc;
 
   buffer[0] = malloc(sizeof(particule) * nbPartPerProc);
   buffer[1] = malloc(sizeof(particule) * nbPartPerProc);
   force = malloc(sizeof(double) * nbPartPerProc);
+  distMin = malloc(sizeof(double) * nbPartPerProc);
 
   /////////////////////////////////////////////////////////////////
   ///               Creation des requetes MPI                   ///
@@ -159,10 +173,11 @@ int main(int argc, char **argv){
 
   for (int n = 0; n < atoi(argv[1]); n++){
 
-    // Initialisation des forces a 0.
+    // Initialisation des forces a 0 et des distances à -1
     for (int i = 0; i < nbPartPerProc; i++){
       force[i].x = 0.0;
       force[i].y = 0.0;
+      distMin[i] = -1;
     }
 
     // On copie les donnees possedees par le processus dans son buffer.
@@ -182,7 +197,7 @@ int main(int argc, char **argv){
 
     // Pendant que le MPI gere l'envoi des donnees, on calcule
     // les forces entre les particules dans data et elles memes.
-    calcul_local(force, data, nbPartPerProc);
+    calcul_local(force, data, nbPartPerProc, distMin);
 
     // Une fois que le calcul est fini, on attend la fin des echanges.
     err = MPI_Wait(&sendRequests[0], &status);
@@ -213,7 +228,7 @@ int main(int argc, char **argv){
       
       // Pendant que le MPI gere l'envoi des donnees, on calcule
       // les forces entre les particules de data et celles reçues precedemment.
-      calcul_lointain(force, buffer[i%2], data, nbPartPerProc);
+      calcul_lointain(force, buffer[i%2], data, nbPartPerProc, distMin);
 
       // Une fois le calcul fini, on attend la fin des echanges.
       MPI_Wait(&sendRequests[i%2], &status);
@@ -227,6 +242,8 @@ int main(int argc, char **argv){
 	return EXIT_FAILURE;
       }
     }
+
+    dt = determine_dt_forall(data, force, nbPartPerProc, distMin);
 
     // Au bout de nbProc-1 iterations, on a l'ensemble des forces.
     // On applique ces forces aux particules.

@@ -174,11 +174,6 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
   return 0;
 }
 
-double max(double a, double b){
-    if (a < b) return b;
-    else return a;
-}
-
 
 double determine_dt(particule data, vecteur force, double distMin){
     double dtx;
@@ -206,14 +201,20 @@ double determine_dt(particule data, vecteur force, double distMin){
 
 double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin){
     int i;
-    double dt = -1;
+    double dt = DT_MAX;
     double dtTmp;
-    
+    double dtTot;
+
     for (i = 0; i < N; i++){
         dtTmp = determine_dt(data[i], force[i], distMin[i]);
-        if (dtTmp == -1 || dt < dtTmp){
+        if (dtTmp < dt){
             dt = dtTmp;
         }
     }
-    return dt;
+    if (dt < DT_MIN)
+      dt = DT_MIN;
+
+    MPI_Allreduce(&dt, &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+
+    return dtTot;
 }

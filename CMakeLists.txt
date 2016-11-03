@@ -6,6 +6,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -lm")
 option(TDP2_BUILD_TESTS "Set to ON to build the functionalities tests" ON)
 option(TDP2_SAVE_RESULTS "Set to ON to save the results of the program at each iteration" OFF)
 
+set(PROJET_VERBOSE 0 CACHE INT "verbose. 0 : no information; 1 : some input and output; 2 : all data")
+set(VERBOSE ON)
+
 find_package(MPI REQUIRED)
 
 include_directories(${MPI_INCLUDE_PATH})
@@ -17,3 +20,6 @@ if(TDP2_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
+
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/TDPConfig.h.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/src/TDPConfig.h  )

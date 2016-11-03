@@ -1,1 +1,10 @@
-char * RAVCITESTDataPath("@CMAKE_SOURCE_DIR@/tests/data/");
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include <string.h>
+
+char testDataPath [] = "@CMAKE_SOURCE_DIR@/tests/data/";
+
+#cmakedefine VERBOSE @PROJET_VERBOSE@
+
+#endif

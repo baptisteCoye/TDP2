@@ -8,6 +8,9 @@
 
 #include"datatype.h"
 
+#define DT_MAX 100000
+#define DT_MIN 0.01
+
 /*!
  * \brief calcule la distance entre deux particules.
  *
@@ -74,5 +77,10 @@ void copier(particule* dst, particule* src, int size);
 void move_particules(particule * data, vecteur * force, int N, double dt);
 
 int save_results(particule * data, int N, char * filename, int nbProc, int myRank, MPI_Datatype PARTICULE);
+
+
+double determine_dt(particule data, vecteur force, double distMin);
+
+double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin);
 
 #endif
