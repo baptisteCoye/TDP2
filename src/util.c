@@ -6,10 +6,10 @@ double distance(particule A, particule B){
   return sqrt((A.px - B.px)*(A.px - B.px) + (A.py - B.py)*(A.py - B.py));
 }
 
-vecteur force_interaction(particule A, particule B){
+vecteur force_interaction(particule A, particule B, double* distanceMinTmp){
   vecteur u, res;
   double dAB = distance(A, B);
-
+  *distanceMinTmp = dAB;
   u.x = (B.px-A.px)/dAB;
   u.y = (B.py-A.py)/dAB;
 
@@ -79,24 +79,31 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
   return 0;
 }
 
-void calcul_local(vecteur* force, particule* data, int N){
+void calcul_local(vecteur* force, particule* data, int N, double* distMin){
 
   vecteur tmp;
 
   for (int i = 0; i < N; i++){
     for (int j = i+1; j < N; j++){
       if (i != j){
-	tmp = force_interaction(data[i], data[j]);
-	force[i].x += tmp.x;
-	force[i].y += tmp.y;
-	force[j].x -= tmp.x;
-	force[j].y -= tmp.y;
+	    double distTmp;
+        tmp = force_interaction(data[i], data[j], &distTmp);
+        if (distTmp < distMin[i] || distMin[i] == -1){
+          distMin[i] = distTmp;
+        }
+        if (distTmp < distMin[j] || distMin[j] == -1){
+          distMin[j] = distTmp;
+        }
+        force[i].x += tmp.x;
+	    force[i].y += tmp.y;
+	    force[j].x -= tmp.x;
+	    force[j].y -= tmp.y;
       }
     }
   }
 }
 
-void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N){
+void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N, double* distMin){
   vecteur tmp;
 
   for (int i = 0; i < N; i++){
@@ -104,6 +111,9 @@ void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N){
       tmp = force_interaction(data[i], buffer[j]);
       force[i].x += tmp.x;
       force[i].y += tmp.y;
+      if (distTmp < distMin[i] || distMin[i] == -1){
+        distMin[i] = distTmp;
+      }
     }
   }
 }
@@ -161,4 +171,43 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
 
   fclose(file);
   return 0;
+}
+
+double max(double a, double b){
+    if (a < b) return b;
+    else return a;
+}
+
+
+double determine_dt(particule data, vecteur force, double distMin){
+    double dtx;
+    double dty;
+    double discrx = data.vx*data.vx + 4*data.ax*distMin;
+    double discrInvx = data.vx*data.vx - 4*data.ax*distMin;
+    double discry = data.vy*data.vy + 4*data.ay*distMin;
+    double discrInvy = data.vy*data.vy - 4*data.ay*distMin;
+
+    if (discrx > 0) {
+        dtx = -vx+sqrt(discr);
+    }
+    else dtx = vx + sqrt(discrInvx);
+
+    if (discry > 0) {
+        dty = -vy+sqrt(discry);
+    }
+    else dty = vy + sqrt(discrInvy);
+
+    return min(dtx, dty);
+}
+
+double determine_dt_forall(particule* data, vecteur* force, int N, double* distMin){
+    int i;
+    double dt = -1;
+    for (i = 0; i < N; i++){
+        dtTmp = determine_dt(data[i], force[i], distMin[i]);
+        if (dtTmp == -1 || dt < dtTmp){
+            dt = dtTmp;
+        }
+    }
+    return dt;
 }
