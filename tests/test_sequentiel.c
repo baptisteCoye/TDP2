@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <perf.h>
 
 #include "datatype.h"
 #include "util.h"
@@ -9,6 +10,9 @@
 #define NB_ITER 100
 
 int main(int argc, void** argv){
+  perf_t begin, end;
+  perf(&begin);
+
   int N;
   particule * data;
   vecteur * forces;
@@ -107,6 +111,8 @@ int main(int argc, void** argv){
   }
 
   free(data); free(forces); free(distMin);
-  
+  perf(&end);
+  perf_diff(&begin, &end);
+  printf("Temps d'execution: "); perf_printmicro(&end);
   return 0;
 }

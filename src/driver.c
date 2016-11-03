@@ -3,11 +3,13 @@
 #include <mpi.h>
 #include "datatype.h"
 #include "util.h"
+#include "perf.h"
 #include "TDPConfig.h"
 #define TAG 100
 
 int main(int argc, char **argv){
-
+  perf_t begin, end;
+  perf(&begin);
   /*  les arguments doivent etre argv[1] = nb_iterations & argv[2] = fileName  */
   if(argc != 3){
     fprintf(stderr, "Le programme doit contenir exactement deux arguments : le nombre desire d'iterations puis le nom du fichier ou recuperer les donnees.\n");
@@ -325,5 +327,8 @@ int main(int argc, char **argv){
   MPI_Type_free(&PARTICULE);
   MPI_Type_free(&V_PARTICULE);
   MPI_Finalize();
+  perf(&end);
+  perf_diff(&begin, &end);
+  printf("Temps d'execution: "); perf_printmicro(&end);
   return 0;
 }
