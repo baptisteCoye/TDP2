@@ -183,12 +183,12 @@ double determine_dt(particule data, vecteur force, double distMin){
     double discry = data.vy*data.vy + 4*data.ay*distMin;
     double discrInvy = data.vy*data.vy - 4*data.ay*distMin;
 
-    if (discrx > 0) {
+    if (discrx > discrInvx) {
       dtx = (-data.vx+sqrt(discrx))/(2*data.ax);
     }
     else dtx = (data.vx + sqrt(discrInvx))/(2*data.ax);
 
-    if (discry > 0) {
+    if (discry > discrInvy) {
       dty = (-data.vy+sqrt(discry))/(2*data.ax);
     }
     else dty = (data.vy + sqrt(discrInvy))/(2*data.ax);
