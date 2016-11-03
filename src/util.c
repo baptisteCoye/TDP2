@@ -206,10 +206,10 @@ double determine_dt_forall(particule* data, vecteur* force, int N, double* distM
     double dtTot;
 
     for (i = 0; i < N; i++){
-        dtTmp = determine_dt(data[i], force[i], distMin[i]);
-        if (dtTmp < dt){
-            dt = dtTmp;
-        }
+      dtTmp = determine_dt(data[i], force[i], distMin[i]/sqrt(2));
+      if (dtTmp < dt){
+	dt = dtTmp;
+      }
     }
     if (dt < DT_MIN)
       dt = DT_MIN;
