@@ -11,8 +11,8 @@ void CreateFileTest(int nombreParticule, File* file){
 
 int main(int argc, char** argv){
     if(argc > 2){
-        File* file = fopen(argc[2], "rw");
-        CreateFileTest(argv[1], argc[2]);
+        FILE* file = fopen(argv[2], "rw");
+        CreateFileTest(argv[1], argv[2]);
     }
     else fprintf(stdout,"<nombre de particules> <nom du fichier>");
 }
