@@ -64,7 +64,7 @@ int main(int argc, void** argv){
 #if VERBOSE >= 2
     printf("           distMin :");
     for (int i = 0; i < N; i++)
-      printf("  distMin[i]");
+      printf("  %lf", distMin[i]);
     printf("\n");
 #endif
 
@@ -80,6 +80,8 @@ int main(int argc, void** argv){
 
     move_particules(data, forces, N, dt);
 
+#ifdef SAVE_RESULTS
+
 #if VERBOSE >= 1
     printf("     sauvegarde des donnees\n");
 #endif
@@ -94,13 +96,14 @@ int main(int argc, void** argv){
     }
     
     //    fprintf(writefile, "%d\n", N);
-    fprintf(writefile, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN x y z\nSPACING spx spy spz\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default", N, 2*N);
+    fprintf(writefile, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN %d %d %d\nSPACING %d %d %d\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default\n", N, -500, -500, 0, 1, 1, 1, 2*N);
     for (int i = 0; i < N; i++)
       fprintf(writefile, "%lf %lf\n", data[i].px, data[i].py);
       //      fprintf(writefile, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
       
     fclose(writefile);
     free(filename);
+#endif
   }
 
   free(data); free(forces); free(distMin);

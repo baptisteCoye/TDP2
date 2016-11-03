@@ -156,7 +156,7 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
     }
     
     //    fprintf(file, "%d\n", N*nbProc);
-    fprintf(file, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN x y z\nSPACING spx spy spz\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default", N*nbProc, 2*N*nbProc);
+    fprintf(file, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN %d %d %d\nSPACING %d %d %d\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default\n", N*nbProc, -500, -500, 0, 1, 1, 1, 2*N*nbProc);
 
     for (i = 0; i < N; i++){
       //      fprintf(file, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
