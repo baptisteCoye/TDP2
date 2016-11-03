@@ -10,4 +10,4 @@ INCLUDE_DIRECTORIES(
   )
 
 add_executable(test_seq test_sequentiel.c)
-target_link_libraries(test_seq util)
+target_link_libraries(test_seq util perf)

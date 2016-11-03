@@ -11,8 +11,10 @@ INCLUDE_DIRECTORIES(
 add_library(util SHARED util.c)
 target_link_libraries(util m ${MPI_LIBRARIES})
 
+add_library(perf SHARED perf.c)
+
 add_executable(driver driver.c)
-target_link_libraries(driver util ${MPI_LIBRARIES})
+target_link_libraries(driver util perf ${MPI_LIBRARIES})
 
 add_executable(randFile randomFile.c)
 target_link_libraries(randFile util)
