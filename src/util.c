@@ -155,17 +155,20 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
       return -1;
     }
     
-    fprintf(file, "%d\n", N*nbProc);
+    //    fprintf(file, "%d\n", N*nbProc);
+    fprintf(file, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN x y z\nSPACING spx spy spz\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default", N*nbProc, 2*N*nbProc);
 
     for (i = 0; i < N; i++){
-      fprintf(file, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+      //      fprintf(file, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+      fprintf(file, "%lf %lf\n", data[i].px, data[i].py);
     }
 
     for (k = 0; k < nbProc - 1; k++){
 
       for (i = 0; i < N; i++){
 	MPI_Recv(buffer, N, PARTICULE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-	fprintf(file, "%lf %lf %lf %lf %lf\n", buffer[i].m, buffer[i].px, buffer[i].py, buffer[i].vx, buffer[i].vy);
+	//	fprintf(file, "%lf %lf %lf %lf %lf\n", buffer[i].m, buffer[i].px, buffer[i].py, buffer[i].vx, buffer[i].vy);
+	fprintf(file, "%lf %lf\n", buffer[i].px, buffer[i].py);
       }
 
     }
