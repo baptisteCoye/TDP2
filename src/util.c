@@ -127,11 +127,15 @@ void copier(particule* buffer, particule* data, int N){
   }
 }
 
-void move_particules(particule * data, vecteur * force, int N, double dt){
+void accelerate(particule * data, vecteur * force, int N){
   for (int i = 0; i < N; i++){
     data[i].ax = force[i].x / data[i].m;
     data[i].ay = force[i].y / data[i].m;
+  }
+}
 
+void move_particules(particule * data, vecteur * force, int N, double dt){
+  for (int i = 0; i < N; i++){
     data[i].px += data[i].vx*dt + data[i].ax*dt*dt/2;
     data[i].py += data[i].vy*dt + data[i].ay*dt*dt/2;
 
@@ -196,8 +200,8 @@ double determine_dt(particule data, vecteur force, double distMin){
     double dtx;
     double dty;
 
-    dtx = max(determine_rac_max((data.ax/2),data.vx,-distMin), determine_rac_max(-(data.ax/2),-data.vx,-distMin));
-    dty = max(determine_rac_max((data.ay/2),data.vy,-distMin), determine_rac_max(-(data.ay/2),-data.vy,-distMin));
+    dtx = max(determine_rac_max((data.ax/2),data.vx,-(0.1*distMin)), determine_rac_max(-(data.ax/2),-data.vx,-(0.1*distMin)));
+    dty = max(determine_rac_max((data.ay/2),data.vy,-(0.1*distMin)), determine_rac_max(-(data.ay/2),-data.vy,-(0.1*distMin)));
 
     if(dtx < dty)
       return dtx;

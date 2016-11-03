@@ -74,6 +74,8 @@ void calcul_lointain(vecteur* force, particule* buffer, particule* data, int N, 
  */ 
 void copier(particule* dst, particule* src, int size);
 
+void accelerate(particule * data, vecteur * force, int N);
+
 void move_particules(particule * data, vecteur * force, int N, double dt);
 
 int save_results(particule * data, int N, char * filename, int nbProc, int myRank, MPI_Datatype PARTICULE);

@@ -31,8 +31,6 @@ int main(int argc, char ** argv){
     parts[i].py = (double) (rand() % (1000*N)) / N -500;
     parts[i].vx = (double) (rand() % (1000*N)) / N -500;
     parts[i].vy = (double) (rand() % (1000*N)) / N -500;
-    parts[i].ax = (double) (rand() % (1000*N)) / N -500;
-    parts[i].ay = (double) (rand() % (1000*N)) / N -500;
   }
 
   for (i = 0; i < N; i++){
@@ -47,7 +45,7 @@ int main(int argc, char ** argv){
   }
 
   for (i = 0; i < N; i++){
-    fprintf(file, "%lf %lf %lf %lf %lf %lf %lf\n", parts[i].m, parts[i].px, parts[i].py, parts[i].vx, parts[i].vy, parts[i].ax, parts[i].ay);
+    fprintf(file, "%lf %lf %lf %lf %lf\n", parts[i].m, parts[i].px, parts[i].py, parts[i].vx, parts[i].vy);
   }
 
   fclose(file);
