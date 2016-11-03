@@ -69,6 +69,6 @@ void copier(particule* dst, particule* src, int size);
 
 void move_particules(particule * data, vecteur * force, int N, double dt);
 
-void save_results();
+int save_results(particule * data, int N, char * filename, int nbProc, int myRank, MPI_Datatype PARTICULE);
 
 #endif

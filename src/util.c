@@ -25,6 +25,7 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
   MPI_Status status;
   FILE * file;
   int nbPartPerProc;
+  int err;
 
   if (myRank == 0){
     file = fopen(filename, "r");
@@ -33,7 +34,9 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
       return -1;
     }
     
-    fscanf(file, "%d\n", nbPart);
+    err = fscanf(file, "%d\n", nbPart);
+    if (err == EOF)
+      return -1;
     
     if (*nbPart < nbProc){
       fprintf(stderr, "Pas assez de particules pour occuper tous les processeurs. Diminuez le nombre de processeurs.\n");
@@ -54,19 +57,26 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
     for (k = 0; k < nbProc - 1; k++){
 
       for (i = 0; i < nbPartPerProc; i++){
-	fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
+	err = fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
+	if (err == EOF)
+	  return -1;
       }
       MPI_Send(data, nbPartPerProc, PARTICULE, i+1, 100, MPI_COMM_WORLD);
 
     }
 
     for (i = 0; i < nbPartPerProc; i++){
-      fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
+      err = fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
+      if (err == EOF)
+	return -1;
     }
     
   } else {
     MPI_Recv(data, nbPartPerProc, PARTICULE, 0, 100, MPI_COMM_WORLD, &status);
   }
+
+  fclose(file);
+  return 0;
 }
 
 void calcul_local(vecteur* force, particule* data, int N){
@@ -117,6 +127,38 @@ void move_particules(particule * data, vecteur * force, int N, double dt){
   }
 }
 
-void save_results(particule * data, int N, char * filename, int iteration){
+int save_results(particule * data, int N, char * filename, int nbProc, int myRank, MPI_Datatype PARTICULE){
+  int i, j, k; 
+  MPI_Status status;
+  FILE * file;
 
+  if (myRank == 0){
+    particule * buffer = malloc(sizeof(buffer[0]) * N);
+    file = fopen(filename, "w+");
+    if (file == NULL){
+      fprintf(stderr, "erreur lors de l'ouverture du fichier.\n");
+      return -1;
+    }
+    
+    fprintf(file, "%d\n", N*nbProc);
+
+    for (i = 0; i < N; i++){
+      fprintf(file, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+    }
+
+    for (k = 0; k < nbProc - 1; k++){
+
+      for (i = 0; i < N; i++){
+	MPI_Recv(buffer, N, PARTICULE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+	fprintf(file, "%lf %lf %lf %lf %lf\n", buffer[i].m, buffer[i].px, buffer[i].py, buffer[i].vx, buffer[i].vy);
+      }
+
+    }
+    
+  } else {
+    MPI_Send(data, N, PARTICULE, 0, 100, MPI_COMM_WORLD);
+  }
+
+  fclose(file);
+  return 0;
 }
