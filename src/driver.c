@@ -119,22 +119,34 @@ int main(int argc, char **argv){
 
   printf("%d\n", VERBOSE);
 
-#if VERBOSE == 2
-  if (rank == 0){
-    printf("particules lues : \n");
-    for (int i = 0; i < nbPartPerProc; i++){
-      printf("    %lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
-    }
-    printf("\n");
-  }
-#endif
-
   nbPartPerProc = nbParticules / nbProc;
 
   buffer[0] = malloc(sizeof(particule) * nbPartPerProc);
   buffer[1] = malloc(sizeof(particule) * nbPartPerProc);
   force = malloc(sizeof(double) * nbPartPerProc);
   distMin = malloc(sizeof(double) * nbPartPerProc);
+
+  /////////////////////////////////////////////////////////////////
+  ///                  Affichage des input                      ///
+  /////////////////////////////////////////////////////////////////
+
+#if VERBOSE == 1
+  if (rank == 0){
+    printf("nombre de particules dans le fichier : %d\n", nbParticules);
+    printf("nombre de processus actifs : %d\n", nbProc);
+  }
+  printf("processeur numéro :%d:, contient %d particules\n", rank, nbPartPerProc);
+#endif
+
+#if VERBOSE == 2
+  if (rank == 0){
+    printf("particules lues : (%d) \n", nbPartPerProc);
+    for (int i = 0; i < nbPartPerProc; i++){
+      printf("    %lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+    }
+    printf("\n");
+  }
+#endif
 
   /////////////////////////////////////////////////////////////////
   ///               Creation des requetes MPI                   ///
