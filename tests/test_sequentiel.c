@@ -58,13 +58,20 @@ int main(int argc, void** argv){
     double dtTmp;
 
 #if VERBOSE >= 1
-    printf("     determination du dt ... ");
+    printf("     determination du dt ... \n");
+#endif
+
+#if VERBOSE >= 2
+    printf("           distMin :");
+    for (int i = 0; i < N; i++)
+      printf("  distMin[i]");
+    printf("\n");
 #endif
 
     dt = determine_dt_forall(data, forces, N, distMin, 1);
 
 #if VERBOSE >= 2
-    printf("%lf\n", dt);
+    printf("     dt = %lf\n", dt);
 #endif
 
 #if VERBOSE >= 1
@@ -78,7 +85,7 @@ int main(int argc, void** argv){
 #endif
 
     char * filename = malloc(sizeof(char) * 20);
-    snprintf(filename, 20, "save_seq_%d.txt", i);    
+    snprintf(filename, 20, "save_seq_%d.vtk", i);    
 
     FILE * writefile = fopen(filename, "w+");
     if (writefile == NULL) {
@@ -86,9 +93,12 @@ int main(int argc, void** argv){
       return EXIT_FAILURE;
     }
     
-    fprintf(writefile, "%d\n", N);
+    //    fprintf(writefile, "%d\n", N);
+    fprintf(writefile, "# vtk DataFile Version 3.0\ncell\nASCII\nDATASET STRUCTURED_POINTS\nDIMENSIONS 2 %d 1\nORIGIN x y z\nSPACING spx spy spz\nPOINT_DATA %d\nSCALARS cell float\nLOOKUP_TABLE default", N, 2*N);
     for (int i = 0; i < N; i++)
-      fprintf(writefile, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+      fprintf(writefile, "%lf %lf\n", data[i].px, data[i].py);
+      //      fprintf(writefile, "%lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
+      
     fclose(writefile);
     free(filename);
   }
