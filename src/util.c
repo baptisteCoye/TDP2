@@ -84,9 +84,13 @@ void calcul_local(vecteur* force, particule* data, int N, double* distMin){
   vecteur tmp;
 
   for (int i = 0; i < N; i++){
+    distMin[i] = -1;
+  }
+
+  for (int i = 0; i < N; i++){
     for (int j = i+1; j < N; j++){
       if (i != j){
-	    double distTmp;
+	double distTmp;
         tmp = force_interaction(data[i], data[j], &distTmp);
         if (distTmp < distMin[i] || distMin[i] == -1){
           distMin[i] = distTmp;
@@ -211,8 +215,8 @@ double determine_dt_forall(particule* data, vecteur* force, int N, double* distM
 	dt = dtTmp;
       }
     }
-    if (dt < DT_MIN)
-      dt = DT_MIN;
+    /* if (dt < DT_MIN) */
+    /*   dt = DT_MIN; */
 
     if (nbProc > 1)
       MPI_Allreduce(&dt, &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);

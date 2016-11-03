@@ -9,7 +9,7 @@
 #include"datatype.h"
 
 #define DT_MAX 100000
-#define DT_MIN 0.01
+#define DT_MIN -100000
 
 /*!
  * \brief calcule la distance entre deux particules.

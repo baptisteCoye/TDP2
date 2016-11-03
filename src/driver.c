@@ -271,15 +271,21 @@ int main(int argc, char **argv){
     }
 
 #if VERBOSE >= 1
-    printf("     :%d: determination du dt ... ", rank);
+    printf("     :%d: determination du dt ... \n", rank);
+#endif
+
+#if VERBOSE >= 2
+    printf("           distMin :");
+    for (int i = 0; i < nbPartPerProc; i++)
+      printf("  %lf", distMin[i]);
+    printf("\n");
 #endif
 
     dt = determine_dt_forall(data, force, nbPartPerProc, distMin, nbProc);
 
 #if VERBOSE >= 2
-    printf("%lf", dt);
+    printf("     :%d: dt = %lf", rank, dt);
 #endif
-    printf("\n");
 
 #if VERBOSE >= 1
     printf("     :%d: deplacement des particules\n", rank);
