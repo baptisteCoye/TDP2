@@ -118,8 +118,6 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
 
-  printf("%d\n", VERBOSE);
-
   const int nbPartPerProc = nbParticules / nbProc;
 
   buffer[0] = malloc(sizeof(particule) * nbPartPerProc);
@@ -132,23 +130,11 @@ int main(int argc, char **argv){
   /////////////////////////////////////////////////////////////////
 
 #if VERBOSE >= 1
-  if (rank == 0){
-    printf("nombre de particules dans le fichier : %d\n", nbParticules);
-    printf("nombre de processus actifs : %d\n", nbProc);
-  }
-  printf("processeur numéro :%d:, contient %d particules\n", rank, nbPartPerProc);
+  printf(":%d: nombre de particules dans le fichier : %d\n", rank, nbParticules);
+  printf(":%d: nombre de processus actifs : %d\n", rank, nbProc);
+  
+  printf(":%d: contient %d testicules\n", rank, nbPartPerProc);
 #endif
-
-#if VERBOSE >= 2
-  if (rank == 0){
-    printf("particules lues : (%d) \n", nbPartPerProc);
-    for (int i = 0; i < nbPartPerProc; i++){
-      printf("    %lf %lf %lf %lf %lf\n", data[i].m, data[i].px, data[i].py, data[i].vx, data[i].vy);
-    }
-    printf("\n");
-  }
-#endif
-
 
 #ifdef SAVE_RESULTS
 
@@ -166,7 +152,6 @@ int main(int argc, char **argv){
   }
   free(initfilename);
   
-  printf("end of first save\n");
 #endif /* TDP2_SAVE_RESULTS */
 
   /////////////////////////////////////////////////////////////////

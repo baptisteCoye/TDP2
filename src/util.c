@@ -20,7 +20,6 @@ vecteur force_interaction(particule A, particule B, double* distanceMinTmp){
 }
 
 int readData(char* filename, int nbProc, int myRank, particule ** data, int * nbPart, MPI_Datatype PARTICULE){
-  particule * buffer;
   int i, j, k; 
   MPI_Status status;
   FILE * file;
@@ -52,22 +51,21 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
   fflush(stdout);
 
   MPI_Bcast(nbPart, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  nbPartPerProc = *nbPart / nbProc;
   *(data) = malloc(sizeof(particule) * nbPartPerProc);
 
-  nbPartPerProc = *nbPart / nbProc;
   printf(":%d: nbPartPerProc :%d: nbPart :%d: nbProc :%d:\n", myRank, nbPartPerProc, *nbPart, nbProc);
   fflush(stdout);
 
   if (myRank == 0){
-    for (k = 0; k < nbProc - 1; k++){
+    for (k = 0; k < nbProc-1; k++){
 
       for (i = 0; i < nbPartPerProc; i++){
 	err = fscanf(file, "%lf %lf %lf %lf %lf\n", &((*data)[i].m), &((*data)[i].px), &((*data)[i].py), &((*data)[i].vx), &((*data)[i].vy));
 	if (err == EOF)
 	  return -1;
       }
-      MPI_Send(data, nbPartPerProc, PARTICULE, k+1, 100, MPI_COMM_WORLD);
-
+      MPI_Send(*data, nbPartPerProc, PARTICULE, k+1, 100, MPI_COMM_WORLD);
     }
 
     for (i = 0; i < nbPartPerProc; i++){
@@ -75,12 +73,12 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
       if (err == EOF)
 	return -1;
     }
-    
+    fclose(file);    
   } else {
-    MPI_Recv(data, nbPartPerProc, PARTICULE, 0, 100, MPI_COMM_WORLD, &status);
+    MPI_Recv(*data, nbPartPerProc, PARTICULE, 0, 100, MPI_COMM_WORLD, &status);
   }
 
-  fclose(file);
+
   return 0;
 }
 
@@ -173,25 +171,21 @@ int save_results(particule * data, const int N, char * filename, int nbProc, int
       fprintf(file, "%lf,%lf\n", data[i].px, data[i].py);
     }
 
-    printf("step1\n");
-
     for (k = 0; k < nbProc - 1; k++){
 
       MPI_Recv(buffer, N, PARTICULE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      printf("receive mes %d couilles\n", k);
       for (i = 0; i < N; i++){
 	//	fprintf(file, "%lf %lf %lf %lf %lf\n", buffer[i].m, buffer[i].px, buffer[i].py, buffer[i].vx, buffer[i].vy);
 	fprintf(file, "%lf %lf\n", buffer[i].px, buffer[i].py);
       }
 
     }
-    
+
+    fclose(file);    
   } else {
-    printf("step 2\n");
     MPI_Send(data, N, PARTICULE, 0, 100, MPI_COMM_WORLD);
   }
 
-  fclose(file);
   return 0;
 }
 
