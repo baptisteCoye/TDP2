@@ -47,15 +47,9 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
     }
   }
 
-  printf(":%d: before broadcast\n", myRank);
-  fflush(stdout);
-
   MPI_Bcast(nbPart, 1, MPI_INT, 0, MPI_COMM_WORLD);
   nbPartPerProc = *nbPart / nbProc;
   *(data) = malloc(sizeof(particule) * nbPartPerProc);
-
-  printf(":%d: nbPartPerProc :%d: nbPart :%d: nbProc :%d:\n", myRank, nbPartPerProc, *nbPart, nbProc);
-  fflush(stdout);
 
   if (myRank == 0){
     for (k = 0; k < nbProc-1; k++){
@@ -152,8 +146,6 @@ int save_results(particule * data, const int N, char * filename, int nbProc, int
   MPI_Status status;
   FILE * file;
   particule * buffer;
-
-  printf("myRank = %d\n", myRank);
 
   if (myRank == 0){
     buffer = malloc(sizeof(particule) * N);
