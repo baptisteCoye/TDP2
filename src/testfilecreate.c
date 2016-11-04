@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-void CreateFileTest(int nombreParticule, File* file){
+void CreateFileTest(int nombreParticule, FILE* file){
     int i;
     fprintf(file,"%d\n", nombreParticule);
     for(i = 0; i < nombreParticule; i++){
