@@ -2,9 +2,10 @@
 #include<stdlib.h>
 
 void CreateFileTest(int nombreParticule, FILE* file){
-    int i;
+    int j;
     fprintf(file,"%d\n", nombreParticule);
-    for(i = 0; i < nombreParticule; i++){
+    for(j = 0; j < nombreParticule; j++){
+        double i = (double) j;
         fprintf(file,"%f %f %f %f %f\n", i, i, i, i, i);
     }
 }
