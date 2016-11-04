@@ -20,7 +20,7 @@ int main(int argc, void** argv){
   double dt;
   int err; 
 
-  FILE * readfile = fopen(FILENAME, "r");
+  FILE * readfile = fopen(argv[1], "r");
   if (readfile == NULL){
     fprintf(stderr, "Erreur lors de la lecture du readfile. Fermeture du programme de test.\n");
     return EXIT_FAILURE;
