@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include <time.h>
 #include "datatype.h"
 #include "util.h"
 #include "perf.h"
@@ -8,8 +9,11 @@
 #define TAG 100
 
 int main(int argc, char **argv){
-  perf_t begin, end;
-  perf(&begin);
+  clock_t begin = clock();
+  float timebegin = (float) begin / CLOCKS_PER_SEC;
+  float realbeg;
+
+
   /*  les arguments doivent etre argv[1] = nb_iterations & argv[2] = fileName  */
   if(argc != 3){
     fprintf(stderr, "Le programme doit contenir exactement deux arguments : le nombre desire d'iterations puis le nom du fichier ou recuperer les donnees.\n");
@@ -37,6 +41,11 @@ int main(int argc, char **argv){
 
   MPI_Comm_size(MPI_COMM_WORLD, &nbProc);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
+  MPI_Reduce(&timebegin, &realbeg, 1, MPI_FLOAT,
+	     MPI_MIN, 0, MPI_COMM_WORLD);
+
 
   //////////////////////////////////////////////////////////////////
   ///             Creation du MPI_Datatype PARTICULE             ///
@@ -331,12 +340,21 @@ int main(int argc, char **argv){
   free(buffer[1]);
   free(force);
 
+
+  clock_t end = clock();
+  float timeend = (float) end / CLOCKS_PER_SEC;
+  float realend;
+  MPI_Reduce(&timeend, &realend, 1, MPI_FLOAT,
+	     MPI_MAX, 0, MPI_COMM_WORLD);
+
+  if(rank == 0){
+    printf("Temps d'execution: %f secondes\n", realend - realbeg);
+  }
+
   // Fin du MPI
   MPI_Type_free(&PARTICULE);
   MPI_Type_free(&V_PARTICULE);
   MPI_Finalize();
-  perf(&end);
-  perf_diff(&begin, &end);
-  printf("Temps d'execution: "); perf_printmicro(&end);
+
   return 0;
 }
