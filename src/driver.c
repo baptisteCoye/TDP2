@@ -30,7 +30,6 @@ int main(int argc, char **argv){
   MPI_Status status;
   MPI_Request sendRequests[2];
   MPI_Request recvRequests[2];
-  int nbPartPerProc;
   double * distMin;
   double dt;
 
@@ -121,7 +120,7 @@ int main(int argc, char **argv){
 
   printf("%d\n", VERBOSE);
 
-  nbPartPerProc = nbParticules / nbProc;
+  const int nbPartPerProc = nbParticules / nbProc;
 
   buffer[0] = malloc(sizeof(particule) * nbPartPerProc);
   buffer[1] = malloc(sizeof(particule) * nbPartPerProc);
@@ -152,6 +151,11 @@ int main(int argc, char **argv){
 
 
 #ifdef SAVE_RESULTS
+
+#if VERBOSE >= 1
+  printf("save first result\n");
+#endif
+
   char * initfilename = malloc(sizeof(char) * 20);
   snprintf(initfilename, 20, "save_par_0.csv");
     
@@ -161,6 +165,8 @@ int main(int argc, char **argv){
     return EXIT_FAILURE;
   }
   free(initfilename);
+  
+  printf("end of first save\n");
 #endif /* TDP2_SAVE_RESULTS */
 
   /////////////////////////////////////////////////////////////////
@@ -169,13 +175,13 @@ int main(int argc, char **argv){
 
   if (nbProc > 1){
 
-    // Envoie depuis le buffer 0
+    // Envoi depuis le buffer 0
     err = MPI_Send_init(buffer[0], nbPartPerProc, V_PARTICULE, (rank+1)%nbProc, TAG, MPI_COMM_WORLD, &sendRequests[0]);
     if (err != 0){
       fprintf(stderr, "Erreur detectee dans MPI_Send_init 0. err = %d\n", err);
       return EXIT_FAILURE;
     }
-    // Envoie depuis le buffer 1
+    // Envoi depuis le buffer 1
     err = MPI_Send_init(buffer[1], nbPartPerProc, V_PARTICULE, (rank+1)%nbProc, TAG, MPI_COMM_WORLD, &sendRequests[1]);
     if (err != 0){
       fprintf(stderr, "Erreur detectee dans MPI_Send_init 1. err = %d\n", err);
@@ -239,11 +245,6 @@ int main(int argc, char **argv){
     // les forces entre les particules dans data et elles memes.
     calcul_local(force, data, nbPartPerProc, distMin);
 
-
-#if VERBOSE >= 1
-    printf("     :%d: calcul des forces ...\n", rank);
-#endif
-
     if (nbProc > 1){
       // Une fois que le calcul est fini, on attend la fin des echanges.
       err = MPI_Wait(&sendRequests[0], &status);
@@ -302,6 +303,8 @@ int main(int argc, char **argv){
 #endif
 
     accelerate(data,force,nbPartPerProc);
+
+    printf ("determine\n");
 
     dt = determine_dt_forall(data, force, nbPartPerProc, distMin, nbProc);
 

@@ -48,10 +48,15 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
     }
   }
 
-  nbPartPerProc = *nbPart / nbProc;
+  printf(":%d: before broadcast\n", myRank);
+  fflush(stdout);
 
   MPI_Bcast(nbPart, 1, MPI_INT, 0, MPI_COMM_WORLD);
   *(data) = malloc(sizeof(particule) * nbPartPerProc);
+
+  nbPartPerProc = *nbPart / nbProc;
+  printf(":%d: nbPartPerProc :%d: nbPart :%d: nbProc :%d:\n", myRank, nbPartPerProc, *nbPart, nbProc);
+  fflush(stdout);
 
   if (myRank == 0){
     for (k = 0; k < nbProc - 1; k++){
@@ -61,7 +66,7 @@ int readData(char* filename, int nbProc, int myRank, particule ** data, int * nb
 	if (err == EOF)
 	  return -1;
       }
-      MPI_Send(data, nbPartPerProc, PARTICULE, i+1, 100, MPI_COMM_WORLD);
+      MPI_Send(data, nbPartPerProc, PARTICULE, k+1, 100, MPI_COMM_WORLD);
 
     }
 
@@ -144,13 +149,16 @@ void move_particules(particule * data, vecteur * force, int N, double dt){
   }
 }
 
-int save_results(particule * data, int N, char * filename, int nbProc, int myRank, MPI_Datatype PARTICULE){
+int save_results(particule * data, const int N, char * filename, int nbProc, int myRank, MPI_Datatype PARTICULE){
   int i, j, k; 
   MPI_Status status;
   FILE * file;
+  particule * buffer;
+
+  printf("myRank = %d\n", myRank);
 
   if (myRank == 0){
-    particule * buffer = malloc(sizeof(buffer[0]) * N);
+    buffer = malloc(sizeof(particule) * N);
     file = fopen(filename, "w+");
     if (file == NULL){
       fprintf(stderr, "erreur lors de l'ouverture du fichier.\n");
@@ -165,10 +173,13 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
       fprintf(file, "%lf,%lf\n", data[i].px, data[i].py);
     }
 
+    printf("step1\n");
+
     for (k = 0; k < nbProc - 1; k++){
 
+      MPI_Recv(buffer, N, PARTICULE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      printf("receive mes %d couilles\n", k);
       for (i = 0; i < N; i++){
-	MPI_Recv(buffer, N, PARTICULE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 	//	fprintf(file, "%lf %lf %lf %lf %lf\n", buffer[i].m, buffer[i].px, buffer[i].py, buffer[i].vx, buffer[i].vy);
 	fprintf(file, "%lf %lf\n", buffer[i].px, buffer[i].py);
       }
@@ -176,6 +187,7 @@ int save_results(particule * data, int N, char * filename, int nbProc, int myRan
     }
     
   } else {
+    printf("step 2\n");
     MPI_Send(data, N, PARTICULE, 0, 100, MPI_COMM_WORLD);
   }
 
@@ -222,10 +234,10 @@ double determine_dt_forall(particule* data, vecteur* force, int N, double* distM
       }
     }
     /* if (dt < DT_MIN) */
-    /*   dt = DT_MIN; */
+      /* dt = DT_MIN; */
 
     if (nbProc > 1)
-      MPI_Allreduce(&dt, &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce((void *) &dt, (void *) &dtTot, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
     else 
       dtTot = dt;
 
