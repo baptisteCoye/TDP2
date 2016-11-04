@@ -19,6 +19,8 @@ target_link_libraries(driver util perf ${MPI_LIBRARIES})
 add_executable(randFile randomFile.c)
 target_link_libraries(randFile util)
 
+add_executable(testfilecreate testfilecreate.c)
+
 if(MPI_COMPILE_FLAGS)
   set_target_properties(driver PROPERTIES
     COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
